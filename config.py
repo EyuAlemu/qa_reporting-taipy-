@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 # App configuration
-APP_TITLE = "AMPCUS  NEW QA Reporting Dashboard"
+APP_TITLE = "AMPCUS   QA Reporting Dashboard"
 
 # Database path
 DB_PATH = Path(__file__).parent / "database" / "metrics.db"

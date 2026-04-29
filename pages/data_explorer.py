@@ -1,8 +1,10 @@
+import sqlite3
+
 import pandas as pd
 from taipy.gui import notify
 
 from components.layout import sidebar_html
-from database.db import get_db_connection
+from database.db import get_db_connection, read_table
 
 
 cycle_name = ""
@@ -63,14 +65,6 @@ def toggle_defect_form(state):
     _sync_expander_labels(state)
 
 
-def read_table(table_name):
-    conn = get_db_connection()
-    try:
-        return pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
-    finally:
-        conn.close()
-
-
 def _to_int(value):
     try:
         return int(value or 0)
@@ -84,6 +78,13 @@ def _to_pct(value):
     except (TypeError, ValueError):
         pct = 0
     return f"{pct:.0f}%"
+
+
+def _to_float(value):
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def refresh_data(state=None):
@@ -117,6 +118,39 @@ def add_cycle(state):
     failed_count = _to_int(state.failed)
     blocked_count = _to_int(state.blocked)
     deferred_count = _to_int(state.deferred)
+    scope_executed_value = _to_float(state.scope_executed)
+    scope_pending_value = _to_float(state.scope_pending)
+
+    counts = {
+        "Executed": executed_count,
+        "Passed": passed_count,
+        "Failed": failed_count,
+        "Blocked": blocked_count,
+        "Deferred": deferred_count,
+    }
+
+    if planned_count <= 0:
+        notify(state, "warning", "Planned test cases must be greater than 0.")
+        return
+    negative_fields = [label for label, value in counts.items() if value < 0]
+    if negative_fields:
+        notify(state, "warning", f"{', '.join(negative_fields)} test cases cannot be negative.")
+        return
+    if not 0 <= scope_executed_value <= 100 or not 0 <= scope_pending_value <= 100:
+        notify(state, "warning", "Scope percentages must be between 0 and 100.")
+        return
+    if abs((scope_executed_value + scope_pending_value) - 100) > 0.1:
+        notify(state, "warning", "Scope executed and pending percentages must total 100.")
+        return
+    if executed_count > planned_count:
+        notify(state, "warning", "Executed test cases cannot be greater than planned test cases.")
+        return
+    if passed_count + failed_count + blocked_count > executed_count:
+        notify(state, "warning", "Passed, failed, and blocked counts cannot exceed executed test cases.")
+        return
+    if deferred_count > planned_count - executed_count:
+        notify(state, "warning", "Deferred test cases cannot exceed not-executed test cases.")
+        return
 
     conn = get_db_connection()
     try:
@@ -141,8 +175,8 @@ def add_cycle(state):
                 failed_count,
                 blocked_count,
                 deferred_count,
-                _to_pct(state.scope_executed),
-                _to_pct(state.scope_pending),
+                _to_pct(scope_executed_value),
+                _to_pct(scope_pending_value),
                 0,
             ),
         )
@@ -157,6 +191,9 @@ def add_defect(state):
     new_defect_id = str(state.defect_id or "").strip()
     if not new_defect_id:
         notify(state, "warning", "Defect ID is required.")
+        return
+    if not str(state.cycle_selected or "").strip():
+        notify(state, "warning", "Cycle is required before adding a defect.")
         return
 
     conn = get_db_connection()
@@ -188,6 +225,8 @@ def add_defect(state):
         conn.commit()
         notify(state, "success", "Defect added.")
         refresh_data(state)
+    except sqlite3.IntegrityError:
+        notify(state, "warning", "Defect ID already exists.")
     finally:
         conn.close()
 
@@ -207,11 +246,11 @@ data_explorer = """
 .sidebar-shell { display:flex; flex-direction:column; background:#f0f2f6; padding:54px 25px 18px 12px; min-height:100vh; }
 .nav-menu { display:grid; gap:8px; }
 .nav-form { margin:0; padding:0; width:100%; }
-.nav-link { display:grid; grid-template-columns:22px minmax(0,1fr); align-items:center; column-gap:9px; width:100%; min-height:34px; padding:6px 12px; border:0; border-radius:9px; color:#34405a; text-align:left; text-decoration:none; font-family:inherit; font-size:0.98rem; line-height:1.32; background:transparent; box-shadow:none; cursor:pointer; }
-.nav-link, .nav-form, .nav-form button, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * { color:#34405a !important; -webkit-text-fill-color:#34405a !important; text-decoration:none !important; }
-.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active *, .nav-link.nav-active:visited *, .nav-link.nav-active:hover * { color:#2563eb !important; -webkit-text-fill-color:#2563eb !important; text-decoration:none !important; font-weight:800 !important; }
+.nav-link { display:grid; grid-template-columns:22px minmax(0,1fr); align-items:center; column-gap:9px; width:100%; min-height:34px; padding:6px 12px; border:0; border-radius:9px; color:#000000; text-align:left; text-decoration:none; font-family:inherit; font-size:0.98rem; line-height:1.32; background:transparent; box-shadow:none; cursor:pointer; }
+.nav-link, .nav-form, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * { color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; }
+.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active *, .nav-link.nav-active:visited *, .nav-link.nav-active:hover * { color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; font-weight:800 !important; }
 .nav-link:hover { background:#e4e8f0; box-shadow:none; }
-.nav-link.nav-active { background:#dbeafe; color:#2563eb; font-weight:800; }
+.nav-link.nav-active { background:#dbeafe; color:#000000; font-weight:800; }
 .nav-icon { display:inline-grid; place-items:center; width:22px; font-size:1.08rem; line-height:1; }
 .nav-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .sidebar-rule { height:1px; background:#c5cad3; margin:20px 0 20px 0; }

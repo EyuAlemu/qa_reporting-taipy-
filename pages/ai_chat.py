@@ -64,11 +64,6 @@ def _current_context():
     return build_qa_context(_load_data())
 
 
-try:
-    generated_analysis_output = analyze_qa_metrics(_current_context())
-except Exception as exc:
-    generated_analysis_output = f"Error generating analysis: {exc}"
-
 def _notify(state, level, message):
     try:
         notify(state, level, message)
@@ -154,11 +149,11 @@ page_body = f"""
 .sidebar-shell {{ display:flex; flex-direction:column; background:#f0f2f6; padding:54px 25px 18px 12px; min-height:100vh; }}
 .nav-menu {{ display:grid; gap:8px; }}
 .nav-form {{ margin:0; padding:0; width:100%; }}
-.nav-link {{ display:grid; grid-template-columns:22px minmax(0,1fr); align-items:center; column-gap:9px; width:100%; min-height:34px; padding:6px 12px; border:0; border-radius:9px; color:#34405a; text-align:left; text-decoration:none; font-family:inherit; font-size:0.98rem; line-height:1.32; background:transparent; box-shadow:none; cursor:pointer; }}
-.nav-link, .nav-form, .nav-form button, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * {{ color:#34405a !important; -webkit-text-fill-color:#34405a !important; text-decoration:none !important; }}
+.nav-link {{ display:grid; grid-template-columns:22px minmax(0,1fr); align-items:center; column-gap:9px; width:100%; min-height:34px; padding:6px 12px; border:0; border-radius:9px; color:#000000; text-align:left; text-decoration:none; font-family:inherit; font-size:0.98rem; line-height:1.32; background:transparent; box-shadow:none; cursor:pointer; }}
+.nav-link, .nav-form, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * {{ color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; }}
 .nav-link:hover {{ background:#e4e8f0; box-shadow:none; }}
-.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active * {{ color:#2563eb !important; -webkit-text-fill-color:#2563eb !important; text-decoration:none !important; font-weight:800 !important; }}
-.nav-link.nav-active {{ background:#dbeafe; color:#2563eb; font-weight:800; }}
+.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active * {{ color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; font-weight:800 !important; }}
+.nav-link.nav-active {{ background:#dbeafe; color:#000000; font-weight:800; }}
 .nav-icon {{ display:inline-grid; place-items:center; width:22px; font-size:1.08rem; line-height:1; }}
 .nav-label {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
 .sidebar-rule {{ height:1px; background:#c5cad3; margin:20px 0 20px 0; }}

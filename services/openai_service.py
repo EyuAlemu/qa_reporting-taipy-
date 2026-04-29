@@ -1,10 +1,14 @@
 import json
+import logging
 
 from openai import OpenAI
 
 from config import ANALYSIS_TEMPERATURE, CHAT_TEMPERATURE, OPENAI_API_KEY, OPENAI_MODEL
 from database.db import load_all_tables
 from services.metrics_service import calculate_kpis, get_analytics_datasets
+
+
+logger = logging.getLogger(__name__)
 
 
 def _client(api_key=None):
@@ -178,6 +182,7 @@ def analyze_qa_metrics(context=None, api_key=None):
         if answer:
             return answer
     except Exception as exc:
+        logger.warning("OpenAI analysis failed; using fallback analysis.", exc_info=exc)
         return _fallback_analysis()
 
     return _fallback_analysis()
@@ -206,8 +211,8 @@ def qa_chatbot(question, context=None, api_key=None):
         answer = _chat(messages, CHAT_TEMPERATURE, 600, api_key)
         if answer:
             return answer
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("OpenAI chatbot failed; using fallback answer.", exc_info=exc)
 
     return _fallback_answer(question)
 

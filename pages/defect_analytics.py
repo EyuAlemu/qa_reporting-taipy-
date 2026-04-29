@@ -1,5 +1,5 @@
 import html
-import math
+from urllib.parse import quote
 
 import pandas as pd
 
@@ -28,9 +28,6 @@ ROOT_CAUSE_COLORS = [
     "#64748b",
     "#d946ef",
 ]
-
-LINE_CHART_HEIGHT_TO_WIDTH = 0.46
-
 
 def _clean_status(status):
     status = str(status)
@@ -116,21 +113,18 @@ def error_discovery_trend(defects):
         y = 88 - (((value - min_value) / value_range) * 76)
         points.append((x, y, value))
 
+    polyline_points = " ".join(f"{x:.2f},{y:.2f}" for x, y, _ in points)
     markers = "".join(
-        f"<span class='line-point' title='Defects: {value}' style='left:{x:.2f}%; top:{y:.2f}%;'></span>"
+        f"<circle cx='{x:.2f}' cy='{y:.2f}' r='1.6'><title>Defects: {value}</title></circle>"
         for x, y, value in points
     )
-    segments = []
-    for (x1, y1, _), (x2, y2, _) in zip(points, points[1:]):
-        dx = x2 - x1
-        dy = y2 - y1
-        scaled_dy = dy * LINE_CHART_HEIGHT_TO_WIDTH
-        length = (dx * dx + scaled_dy * scaled_dy) ** 0.5
-        angle = math.degrees(math.atan2(scaled_dy, dx))
-        segments.append(
-            f"<span class='line-segment' style='left:{x1:.2f}%; top:{y1:.2f}%; "
-            f"width:{length:.2f}%; transform:translateY(-50%) rotate({angle:.2f}deg);'></span>"
-        )
+    trend_svg = f"""
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'>
+  <polyline points='{polyline_points}' fill='none' stroke='#0b6fc6' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' vector-effect='non-scaling-stroke'/>
+  <g fill='#0b6fc6' stroke='#ffffff' stroke-width='0.7' vector-effect='non-scaling-stroke'>{markers}</g>
+</svg>
+"""
+    trend_src = "data:image/svg+xml;charset=utf-8," + quote(trend_svg)
     labels_html = "".join(f"<span>{html.escape(str(label))}</span>" for label in labels)
     y_ticks = list(range(max_value, min_value - 1, -1))
     y_labels = "".join(f"<span>{value}</span>" for value in y_ticks)
@@ -141,7 +135,7 @@ def error_discovery_trend(defects):
   <div class='line-chart-wrap'>
     <div class='line-y-axis'>Defects</div>
     <div class='line-y-labels'>{y_labels}</div>
-    <div class='line-chart'>{''.join(segments)}{markers}</div>
+    <div class='line-chart'><img class='line-chart-img' src='{trend_src}' alt='Error discovery trend line' /></div>
   </div>
   <div class='line-x-labels'>{labels_html}</div>
   <div class='defect-x-axis'>Week</div>

@@ -1,6 +1,7 @@
 import sqlite3
+
 import pandas as pd
-from pathlib import Path
+
 from config import DB_PATH
 
 def get_db_connection():
@@ -17,6 +18,13 @@ def get_table_names():
     tables = [row[0] for row in cursor.fetchall()]
     conn.close()
     return tables
+
+
+def _validate_table_name(table_name):
+    table_name = str(table_name or "")
+    if table_name not in get_table_names():
+        raise ValueError(f"Unknown table name: {table_name}")
+    return table_name
 
 def load_all_tables():
     """Load all tables into a dictionary of pandas DataFrames."""
@@ -42,8 +50,9 @@ def find_column(df, possible_names):
 
 
 def read_table(table_name):
-    conn = sqlite3.connect(DB_PATH)
-    query = f"SELECT * FROM {table_name}"
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-    return df
+    table_name = _validate_table_name(table_name)
+    conn = get_db_connection()
+    try:
+        return pd.read_sql_query(f'SELECT * FROM "{table_name}"', conn)
+    finally:
+        conn.close()

@@ -47,14 +47,12 @@ def sidebar_metrics_json():
 
 def nav_link(icon_name, label, page, active_page):
     active_class = " nav-active" if page == active_page else ""
-    text_color = "#2563eb" if page == active_page else "#34405a"
+    text_color = "#000000"
     return (
-        f"<a class='nav-form' href='/{page}' style='text-decoration:none !important;'>"
-        f"<button class='nav-link{active_class}' type='button' "
+        f"<a class='nav-link nav-form{active_class}' href='/{page}' "
         f"style='color:{text_color} !important; -webkit-text-fill-color:{text_color} !important; text-decoration:none !important;'>"
         f"<span class='nav-icon'><span class='nav-glyph nav-glyph-{icon_name}'></span></span>"
         f"<span class='nav-label' style='color:{text_color} !important; -webkit-text-fill-color:{text_color} !important;'>{label}</span>"
-        f"</button>"
         f"</a>"
     )
 
@@ -423,7 +421,6 @@ def sidebar_html(active_page):
 <style>
 .sidebar-shell .nav-link,
 .sidebar-shell .nav-form,
-.sidebar-shell .nav-form button,
 .sidebar-shell .nav-link:link,
 .sidebar-shell .nav-link:visited,
 .sidebar-shell .nav-link:hover,
@@ -440,8 +437,8 @@ def sidebar_html(active_page):
 .sidebar-shell .nav-link:hover *,
 .sidebar-shell .nav-link:active *,
 .sidebar-shell .nav-link:focus * {{
-  color: #34405a !important;
-  -webkit-text-fill-color: #34405a !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   text-decoration: none !important;
   -webkit-text-decoration-line: none !important;
   text-decoration-line: none !important;
@@ -459,8 +456,8 @@ def sidebar_html(active_page):
 .sidebar-shell .nav-link.nav-active .nav-label,
 .sidebar-shell .nav-link.nav-active:visited .nav-label,
 .sidebar-shell .nav-link.nav-active:hover .nav-label {{
-  color: #2563eb !important;
-  -webkit-text-fill-color: #2563eb !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   font-weight: 800 !important;
   text-decoration: none !important;
 }}
@@ -638,6 +635,27 @@ def sidebar_html(active_page):
     </div>
   </div>
 </div>
+<style>
+.sidebar-shell .nav-menu a.nav-link,
+.sidebar-shell .nav-menu a.nav-link:link,
+.sidebar-shell .nav-menu a.nav-link:visited,
+.sidebar-shell .nav-menu a.nav-link:hover,
+.sidebar-shell .nav-menu a.nav-link:active,
+.sidebar-shell .nav-menu a.nav-link:focus,
+.sidebar-shell .nav-menu a.nav-link span,
+.sidebar-shell .nav-menu a.nav-link:link span,
+.sidebar-shell .nav-menu a.nav-link:visited span,
+.sidebar-shell .nav-menu a.nav-link:hover span,
+.sidebar-shell .nav-menu a.nav-link:active span,
+.sidebar-shell .nav-menu a.nav-link:focus span,
+.sidebar-shell .nav-menu .nav-label {{
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-decoration: none !important;
+  -webkit-text-decoration-line: none !important;
+  text-decoration-line: none !important;
+}}
+</style>
 <script>
 if (window.location.search === "?") {{
   window.history.replaceState(null, "", window.location.pathname + window.location.hash);
@@ -655,11 +673,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar {{ wi
 .sidebar-shell {{ position:fixed; top:0; left:0; bottom:0; width:306px; height:100vh; box-sizing:border-box; z-index:20; display:flex; flex-direction:column; background:#f8fafc; padding:40px 28px 24px 16px; overflow-y:auto; overflow-x:hidden; scrollbar-width:thin; scrollbar-color:#cbd5e1 transparent; }}
 .nav-menu {{ display:grid; gap:12px; }}
 .nav-form {{ margin:0; padding:0; width:100%; }}
-.nav-link {{ display:grid; grid-template-columns:24px minmax(0,1fr); align-items:center; column-gap:12px; width:100%; min-height:36px; padding:8px 16px; border:0; border-radius:8px; color:#475569; text-align:left; text-decoration:none; font-family:inherit; font-size:0.9rem; line-height:1.4; background:transparent; box-shadow:none; cursor:pointer; transition: all 0.2s ease; }}
-.nav-link, .nav-form, .nav-form button, .nav-link:link, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * {{ color:#475569 !important; -webkit-text-fill-color:#475569 !important; text-decoration:none !important; }}
-.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:link, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:link .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active *, .nav-link.nav-active:visited *, .nav-link.nav-active:hover * {{ color:#2563eb !important; -webkit-text-fill-color:#2563eb !important; text-decoration:none !important; font-weight:700 !important; }}
+.nav-link {{ display:grid; grid-template-columns:24px minmax(0,1fr); align-items:center; column-gap:12px; width:100%; min-height:36px; padding:8px 16px; border:0; border-radius:8px; color:#000000; text-align:left; text-decoration:none; font-family:inherit; font-size:0.9rem; line-height:1.4; background:transparent; box-shadow:none; cursor:pointer; transition: all 0.2s ease; }}
+.nav-link, .nav-form, .nav-link:link, .nav-link:visited, .nav-link:hover, .nav-link:active, .nav-link:focus, .nav-link .nav-label, .nav-link:link .nav-label, .nav-link:visited .nav-label, .nav-link:hover .nav-label, .nav-link * {{ color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; }}
+.nav-link.nav-active, .nav-form .nav-link.nav-active, .nav-form .nav-link.nav-active *, .nav-link.nav-active:link, .nav-link.nav-active:visited, .nav-link.nav-active:hover, .nav-link.nav-active .nav-label, .nav-link.nav-active:link .nav-label, .nav-link.nav-active:visited .nav-label, .nav-link.nav-active:hover .nav-label, .nav-link.nav-active *, .nav-link.nav-active:visited *, .nav-link.nav-active:hover * {{ color:#000000 !important; -webkit-text-fill-color:#000000 !important; text-decoration:none !important; font-weight:700 !important; }}
 .nav-link:hover {{ background:#e2e8f0; }}
-.nav-link.nav-active {{ background:#dbeafe; color:#2563eb; font-weight:700; }}
+.nav-link.nav-active {{ background:#dbeafe; color:#000000; font-weight:700; }}
 .nav-icon {{ display:inline-grid; place-items:center; width:22px; font-size:1.08rem; line-height:1; }}
 .nav-label {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
 .sidebar-rule {{ height:1px; background:#c5cad3; margin:20px 0 20px 0; }}
@@ -748,8 +766,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar {{ wi
 .line-chart-wrap {{ display:grid; grid-template-columns:42px 34px minmax(0,1fr); min-height:230px; align-items:stretch; }}
 .line-y-labels {{ display:grid; align-content:space-between; color:#68738a; font-size:0.86rem; padding:0 0 0 0; }}
 .line-chart {{ position:relative; width:100%; height:230px; aspect-ratio:2.17/1; overflow:hidden; background:repeating-linear-gradient(to top, transparent 0, transparent 43px, #dfe5ef 44px); }}
-.line-segment {{ position:absolute; display:block; height:3px; background:#0b6fc6; transform-origin:left center; border-radius:999px; z-index:1; }}
-.line-point {{ position:absolute; width:8px; height:8px; margin-left:-4px; margin-top:-4px; border-radius:999px; background:#0b6fc6; border:1.2px solid #ffffff; z-index:2; box-sizing:border-box; }}
+.line-chart-img {{ display:block; width:100%; height:100%; }}
 .line-x-labels {{ display:grid; grid-template-columns:repeat(5,1fr); color:#68738a; font-size:0.85rem; margin-left:76px; margin-top:10px; }}
 .line-x-labels span {{ text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
 .severity-cycle-chart .defect-chart-layout {{ grid-template-columns:42px 34px minmax(0,1fr) 112px; gap:14px; }}
