@@ -2,18 +2,19 @@
 
 Taipy GUI application for QA reporting, test execution tracking, defect analytics, data management, and AI-assisted release insights.
 
-The app reads QA data from `database/metrics.db`, calculates dashboard metrics with pandas, and renders a Streamlit-like QA dashboard experience in Taipy.
+The app reads QA metrics from `database/metrics.db`, calculates dashboard KPIs with pandas, renders the dashboard in Taipy, and can use OpenAI for deeper analysis when an API key is configured.
 
 ## Features
 
-- Executive Overview with KPI summary, scope coverage, error discovery rate, defect charts, root causes, and alerts.
-- Test Execution page with cycle-level execution and pass-rate views.
-- Defect Analytics page with severity/cycle breakdowns and discovery trends.
-- Data Management page for viewing current tables and adding test cycles or defects.
-- AI Analysis & Chat page for generated QA analysis and dashboard questions.
-- Sidebar Insight Bot with quick metric-based answers for defects, pass rate, execution, coverage, deferred tests, and release risk.
-- SQLite-backed metrics through `database/metrics.db`.
-- OpenAI integration when `OPENAI_API_KEY` is configured, with metric-based fallback answers when it is not.
+- Executive Overview with KPI cards, scope coverage, defect summaries, root causes, active alerts, and release-readiness signals.
+- Test Execution page with cycle-level execution, pass rate, planned/executed counts, blocked tests, and deferred tests.
+- Defect Analytics page with severity by cycle, error discovery trend, defect status by priority, root cause distribution, and defect records.
+- Data Management page for reviewing current data and adding test cycles or defects.
+- AI Analysis page that generates a release-style QA analysis from the current dashboard context.
+- Insight Bot page for asking questions about the loaded QA data.
+- Sidebar Insight Bot with quick dashboard answers from the same SQLite data.
+- SQLite database backend stored in `database/metrics.db`.
+- OpenAI integration with deterministic fallback answers when `OPENAI_API_KEY` is missing or the API call fails.
 
 ## Quick Start
 
@@ -26,7 +27,7 @@ pip install -r requirements.txt
 2. Optional: set an OpenAI API key for AI-generated responses:
 
 ```powershell
-set OPENAI_API_KEY=your_api_key_here
+$env:OPENAI_API_KEY="your_api_key_here"
 ```
 
 3. Run the app:
@@ -35,7 +36,7 @@ set OPENAI_API_KEY=your_api_key_here
 python app.py
 ```
 
-4. Open the URL printed in the terminal. The app starts at the first available port from `5000`, for example:
+4. Open the URL printed in the terminal. The app starts on the first available local port from `5000` through `5049`, for example:
 
 ```text
 http://127.0.0.1:5000/executive-overview
@@ -43,27 +44,53 @@ http://127.0.0.1:5000/executive-overview
 
 ## Pages
 
-- `Executive Overview`: high-level program dashboard, defect stats, scope coverage, alerts, and readiness signals.
-- `Test Execution`: test execution charts and execution data.
-- `Defect Analytics`: defect severity, cycle, trend, and root-cause views.
-- `Data Management`: add test cycles, add defects, and review current database records.
-- `AI Insights & Chat`: generate AI analysis and ask dashboard questions.
+- `Executive Overview`: high-level QA dashboard with KPIs, charts, alerts, and release readiness.
+- `Test Execution`: execution progress and pass-rate analysis by test cycle.
+- `Defect Analytics`: defect trends, severity/cycle analysis, status analysis, root causes, and defect table.
+- `Data Management`: add test cycles, add defects, and review current `test_execution` and `defects` data.
+- `AI Insights & Chat`: generate AI analysis and ask the main Insight Bot dashboard questions.
+
+The app also keeps route aliases for `home` and `data-explorer`.
 
 ## AI Behavior
 
-The OpenAI service is implemented in `services/openai_service.py`.
+AI logic lives in `services/openai_service.py`.
 
-- `analyze_qa_metrics()` generates the executive QA analysis.
-- `qa_chatbot()` answers dashboard questions.
-- If `OPENAI_API_KEY` is missing or the API call fails, the app returns deterministic answers from `metrics.db` instead of crashing.
+- `build_qa_context()` builds compact JSON context from the SQLite tables, KPIs, and analytics datasets.
+- `analyze_qa_metrics()` creates the AI Analysis output.
+- `qa_chatbot()` answers dashboard questions for the main Insight Bot and compatibility helpers.
+- The Generate AI Analysis button runs as a long callback and shows a loading state while analysis is being generated.
+- If OpenAI is not configured or the request fails, the app logs the failure and returns local fallback analysis from the dashboard data.
 
-Example questions:
+Useful questions:
 
-- `How many total defects?`
-- `What is the pass rate?`
-- `How many critical defects?`
-- `What is the execution rate?`
+- `Which cycle is riskiest?`
+- `Why is pass rate low?`
+- `Which root cause has the most defects?`
+- `How many critical defects are open?`
+- `What actions should the team take this week?`
 - `Is this release ready?`
+
+## Data Management Rules
+
+The Data Management page writes to SQLite without changing the dashboard logic. It validates input before saving.
+
+Test cycle validation:
+
+- Cycle name is required.
+- Planned test cases must be greater than `0`.
+- Executed, passed, failed, blocked, and deferred counts cannot be negative.
+- Scope executed and scope pending must each be between `0` and `100`.
+- Scope executed plus scope pending must total `100`.
+- Executed test cases cannot be greater than planned test cases.
+- Passed, failed, and blocked counts cannot exceed executed test cases.
+- Deferred test cases cannot exceed not-executed test cases.
+
+Defect validation:
+
+- Defect ID is required.
+- Cycle is required.
+- Duplicate defect IDs are blocked and shown as a warning.
 
 ## Database
 
@@ -73,13 +100,29 @@ The app uses SQLite:
 database/metrics.db
 ```
 
-Core tables currently used:
+The primary dashboard tables are:
 
 - `test_execution`
 - `defects`
 
-Database helpers live in `database/db.py`.
-Metric calculations and analytics datasets live in `services/metrics_service.py`.
+Other tables are discovered dynamically and can be included in AI context. Database helpers live in `database/db.py`, and metric calculations live in `services/metrics_service.py`.
+
+## Configuration
+
+Configuration is in `config.py`:
+
+- `APP_TITLE`
+- `DB_PATH`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+- `ANALYSIS_TEMPERATURE`
+- `CHAT_TEMPERATURE`
+
+Current OpenAI model:
+
+```text
+gpt-4o-mini
+```
 
 ## Project Structure
 
@@ -89,6 +132,7 @@ Metric calculations and analytics datasets live in `services/metrics_service.py`
 |-- config.py
 |-- requirements.txt
 |-- README.md
+|-- check_db.py
 |-- database/
 |   |-- db.py
 |   `-- metrics.db
@@ -108,31 +152,31 @@ Metric calculations and analytics datasets live in `services/metrics_service.py`
     `-- test_execution.py
 ```
 
-## Configuration
+## Development Notes
 
-Configuration is in `config.py`:
+- Restart the app after Python changes.
+- Hard refresh the browser if old CSS or old page content is still visible.
+- `app.py` removes local `__pycache__` folders on startup.
+- `.gitignore` excludes Python cache files, virtual environments, `.env`, and log files.
+- Do not commit your OpenAI API key.
 
-- `APP_TITLE`
-- `DB_PATH`
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
-- `ANALYSIS_TEMPERATURE`
-- `CHAT_TEMPERATURE`
+Useful syntax check:
 
-## Requirements
+```powershell
+$files = Get-ChildItem -Recurse -File -Filter *.py | ForEach-Object { $_.FullName }
+python -m py_compile @files
+```
 
-See `requirements.txt`.
+If Python cache files were already tracked by Git, remove them from Git tracking after closing any app process that may be using them:
 
-Main dependencies:
+```powershell
+git rm -r --cached __pycache__ components/__pycache__ database/__pycache__ pages/__pycache__ services/__pycache__
+git add .gitignore
+git commit -m "Ignore generated Python cache files"
+```
 
-- Taipy
-- pandas
-- plotly
-- openai
+To push the current branch named `master`:
 
-## Notes
-
-- Restart the app after code changes.
-- Hard refresh the browser if old UI is still visible.
-- The port is selected automatically starting at `5000`.
-- The dashboard is designed around the existing `metrics.db` data and does not require sample-data generation.
+```powershell
+git push -u origin master
+```
