@@ -87,11 +87,17 @@ def _to_float(value):
         return 0.0
 
 
+def _with_row_numbers(df):
+    display_df = df.copy()
+    display_df.insert(0, " ", range(len(display_df)))
+    return display_df
+
+
 def refresh_data(state=None):
     global test_execution_data, defect_data, cycle_options, cycle_selected
 
     test_execution_data = read_table("test_execution")
-    defect_data = read_table("defects")
+    defect_data = _with_row_numbers(read_table("defects"))
     cycle_options = (
         test_execution_data["environment"].dropna().astype(str).tolist()
         if not test_execution_data.empty and "environment" in test_execution_data.columns
@@ -104,6 +110,25 @@ def refresh_data(state=None):
         state.defect_data = defect_data
         state.cycle_options = cycle_options
         state.cycle_selected = cycle_selected
+
+
+def refresh_dashboard_partials(state):
+    try:
+        from pages.defect_analytics import render_defect_analytics
+        from pages.executive_overview import render_executive_overview
+        from pages.test_execution import render_test_execution
+    except Exception:
+        return
+
+    partial_updates = (
+        ("executive_overview_partial", render_executive_overview),
+        ("test_execution_partial", render_test_execution),
+        ("defect_analytics_partial", render_defect_analytics),
+    )
+    for partial_name, render in partial_updates:
+        partial = getattr(state, partial_name, None)
+        if partial is not None:
+            partial.update_content(state, render())
 
 
 def add_cycle(state):
@@ -183,6 +208,7 @@ def add_cycle(state):
         conn.commit()
         notify(state, "success", "Test cycle added.")
         refresh_data(state)
+        refresh_dashboard_partials(state)
     finally:
         conn.close()
 
@@ -225,6 +251,7 @@ def add_defect(state):
         conn.commit()
         notify(state, "success", "Defect added.")
         refresh_data(state)
+        refresh_dashboard_partials(state)
     except sqlite3.IntegrityError:
         notify(state, "warning", "Defect ID already exists.")
     finally:

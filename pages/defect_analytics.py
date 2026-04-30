@@ -223,14 +223,14 @@ def defects_by_root_cause(defects):
 """
 
 
-try:
-    data = load_all_tables()
-    defects_df = data.get("defects", pd.DataFrame()).copy()
-except Exception:
-    defects_df = pd.DataFrame()
+def render_defect_analytics():
+    try:
+        data = load_all_tables()
+        defects_df = data.get("defects", pd.DataFrame()).copy()
+    except Exception:
+        defects_df = pd.DataFrame()
 
-
-page_body = f"""
+    page_body = f"""
 <div class='page-header defect-header'>
   <div class='logo-shell'>
     <div class='logo-text'>AMPCUS</div>
@@ -252,4 +252,8 @@ page_body = f"""
 </div>
 """
 
-defect_analytics = build_page_shell(page_body, "defect-analytics")
+    return build_page_shell(page_body, "defect-analytics")
+
+
+defect_analytics_partial = None
+defect_analytics = "<|part|partial={defect_analytics_partial}|>"

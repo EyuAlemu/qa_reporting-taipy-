@@ -33,7 +33,7 @@ def load_all_tables():
     conn = get_db_connection()
     for table in tables:
         try:
-            df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
+            df = pd.read_sql_query(f'SELECT * FROM "{table}"', conn)
             data[table] = df
         except Exception as e:
             print(f"Error loading table {table}: {e}")

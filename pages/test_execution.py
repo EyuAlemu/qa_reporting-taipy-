@@ -43,17 +43,18 @@ def html_cycle_bar_chart(data, metric, title, y_title):
     """
 
 
-try:
-    data = load_all_tables()
-except Exception:
-    data = {}
+def render_test_execution():
+    try:
+        data = load_all_tables()
+    except Exception:
+        data = {}
 
-test_execution_df = get_analytics_datasets(data).get("test_execution_by_cycle", pd.DataFrame())
-execution_chart = html_cycle_bar_chart(test_execution_df, "execution_pct", "Test Execution by Cycle", "execution_pct")
-pass_rate_chart = html_cycle_bar_chart(test_execution_df, "pass_rate_pct", "Pass Rate by Cycle", "pass_rate_pct")
-test_execution_table = test_execution_df.to_html(index=True, classes="data-table", border=0)
+    test_execution_df = get_analytics_datasets(data).get("test_execution_by_cycle", pd.DataFrame())
+    execution_chart = html_cycle_bar_chart(test_execution_df, "execution_pct", "Test Execution by Cycle", "execution_pct")
+    pass_rate_chart = html_cycle_bar_chart(test_execution_df, "pass_rate_pct", "Pass Rate by Cycle", "pass_rate_pct")
+    test_execution_table = test_execution_df.to_html(index=True, classes="data-table", border=0)
 
-page_body = f"""
+    page_body = f"""
 <div class='page-header execution-header'>
   <div class='logo-shell ampcus-logo'>
     <div class='logo-text'>AMPCUS</div>
@@ -91,4 +92,8 @@ page_body = f"""
 </style>
 """
 
-test_execution = build_page_shell(page_body, "test-execution")
+    return build_page_shell(page_body, "test-execution")
+
+
+test_execution_partial = None
+test_execution = "<|part|partial={test_execution_partial}|>"

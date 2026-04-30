@@ -146,6 +146,20 @@ def open_insight_bot(state):
 page_body = f"""
 <style>
 .dashboard-shell {{ display:grid; grid-template-columns:306px minmax(0,1fr); background:#ffffff; color:#111827; min-height:100vh; }}
+html,
+body,
+#root {{
+  max-width: 100%;
+  overflow-x: hidden !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {{
+  width: 0;
+  height: 0;
+}}
 .sidebar-shell {{ display:flex; flex-direction:column; background:#f0f2f6; padding:54px 25px 18px 12px; min-height:100vh; }}
 .nav-menu {{ display:grid; gap:8px; }}
 .nav-form {{ margin:0; padding:0; width:100%; }}
@@ -172,7 +186,7 @@ page_body = f"""
 .sidebar-bot-btn {{ width:100%; height:49px; border-radius:9px; font-size:1.04rem; cursor:pointer; border:0; background:#2563eb; color:#ffffff; font-weight:700; }}
 .sidebar-bot-btn:disabled {{ opacity:0.72; cursor:wait; }}
 .sidebar-bot-clear-btn {{ margin-top:16px; border:1px solid #c7ccd6; background:#ffffff; color:#172033; }}
-.main-shell {{ display:grid; gap:24px; align-content:start; padding:86px 66px 26px 100px; min-width:0; }}
+.main-shell {{ display:grid; gap:24px; align-content:start; padding:86px 66px 26px 100px; min-width:0; max-width:100%; overflow-x:hidden; }}
 .page-header {{ display:grid; gap:10px; justify-items:center; text-align:center; }}
 .logo-shell {{ display:flex; flex-direction:column; align-items:center; gap:4px; }}
 .logo-text {{ font-size:3.35rem; font-weight:500; letter-spacing:-0.06em; color:#1681bd; font-family:Georgia, 'Times New Roman', serif; }}
@@ -181,6 +195,8 @@ page_body = f"""
   display: grid;
   gap: 22px;
   max-width: 1280px;
+  width: 100%;
+  overflow-x: hidden;
 }}
 .ai-header {{
   justify-items: center;
@@ -212,6 +228,45 @@ page_body = f"""
   min-height: 42px;
   align-items: end;
 }}
+.ai-tab-link,
+.ai-tab-link:link,
+.ai-tab-link:visited,
+.ai-tab-link:hover,
+.ai-tab-link:active,
+.ai-tab-link:focus {{
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0 13px 0;
+  border-bottom: 2px solid transparent;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  -webkit-text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+}}
+.ai-tab-link.active {{
+  border-bottom-color: #2563eb;
+}}
+.ai-tab-button {{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: #172033 !important;
+  -webkit-text-fill-color: #172033 !important;
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  cursor: pointer;
+  pointer-events: none;
+  text-decoration: none !important;
+}}
+.ai-tab-link.active .ai-tab-button {{
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}}
 .ai-tab {{
   border: 0;
   background: transparent;
@@ -223,7 +278,13 @@ page_body = f"""
   box-shadow: none;
   min-width: auto;
   text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
 }}
+.ai-tabs a.ai-tab,
+.ai-tabs a.ai-tab *,
+.ai-tabs button.ai-tab,
+.ai-tabs button.ai-tab *,
 .ai-tab:link,
 .ai-tab:visited,
 .ai-tab:hover,
@@ -232,11 +293,46 @@ page_body = f"""
   color: #172033 !important;
   -webkit-text-fill-color: #172033 !important;
   text-decoration: none !important;
+  text-decoration-line: none !important;
+  -webkit-text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+}}
+.ai-tabs a.ai-tab:hover {{
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}}
+.ai-tabs button.ai-tab:hover {{
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
 }}
 .ai-tab.active {{
   color: #2563eb !important;
   -webkit-text-fill-color: #2563eb !important;
   border-bottom: 2px solid #2563eb;
+}}
+.ai-tab::after {{
+  content: attr(data-label);
+  color: #172033 !important;
+  -webkit-text-fill-color: #172033 !important;
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  -webkit-text-decoration-line: none !important;
+}}
+.ai-tab.active::after {{
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}}
+.ai-tab .ai-tab-text,
+.ai-tab:link .ai-tab-text,
+.ai-tab:visited .ai-tab-text,
+.ai-tab:hover .ai-tab-text,
+.ai-tab:active .ai-tab-text,
+.ai-tab:focus .ai-tab-text {{
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  -webkit-text-decoration-line: none !important;
 }}
 .ai-analysis-section {{
   display: grid;
@@ -325,26 +421,33 @@ page_body = f"""
 .insight-section {{
   display: grid;
   gap: 14px;
+  width: 100%;
+  max-width: none;
 }}
 .insight-input-row {{
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  width: min(100%, 1040px);
+  display: block !important;
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 50px;
   min-width: 0;
   margin-top: 10px;
 }}
 .insight-question-input {{
-  flex: 1 1 auto;
-  width: auto;
+  width: 100% !important;
+  max-width: none !important;
   min-width: 0;
   margin: 0 !important;
+  display: block !important;
 }}
 .insight-question-input div,
 .insight-question-input .MuiFormControl-root,
+.insight-question-input .MuiTextField-root,
+.insight-question-input .MuiOutlinedInput-root,
 .insight-question-input .MuiInputBase-root {{
   width: 100% !important;
   min-width: 0 !important;
+  max-width: none !important;
 }}
 .insight-question-input label,
 .insight-question-input .MuiInputLabel-root {{
@@ -352,22 +455,29 @@ page_body = f"""
 }}
 .insight-input-row input {{
   width: 100%;
-  height: 48px;
+  min-width: 0;
+  height: 50px;
   box-sizing: border-box;
   border: 1px solid #d8dee8;
   border-radius: 999px;
   background: #f1f3f7;
   color: #172033;
-  padding: 0 22px;
+  padding: 0 132px 0 22px;
   font-size: 1rem;
 }}
 .insight-send-btn {{
-  flex: 0 0 96px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  z-index: 2;
   width: 96px;
-  height: 48px;
+  min-width: 96px;
+  max-width: 96px;
+  height: 50px;
+  margin: 0 !important;
   border: 0;
   border-radius: 999px;
   background: #2563eb;
@@ -375,6 +485,13 @@ page_body = f"""
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+}}
+.insight-input-row .insight-send-btn,
+.insight-input-row button.insight-send-btn {{
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  justify-self: start !important;
 }}
 .insight-clear-btn {{
   display: inline-flex;
@@ -406,11 +523,12 @@ page_body = f"""
 }}
 @media (max-width: 640px) {{
   .insight-input-row {{
-    flex-direction: column;
     width: 100%;
   }}
   .insight-send-btn {{
-    width: 100%;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
   }}
 }}
 </style>
@@ -487,11 +605,11 @@ Examples: Which cycle is riskiest? Why is pass rate low? What actions should the
 _tab_controls = """<|AI Analysis|button|on_action=open_ai_analysis|class_name={analysis_tab_class}|>
     <|Insight Bot|button|on_action=open_insight_bot|class_name={insight_tab_class}|>"""
 
-_analysis_tabs = """<a class='ai-tab active' href='/ai-insights-chat'>AI Analysis</a>
-    <a class='ai-tab' href='/ai-insights-chat-bot'>Insight Bot</a>"""
+_analysis_tabs = """<a class='ai-tab-link active' href='/ai-insights-chat' target='_self' aria-label='AI Analysis'><button class='ai-tab-button' type='button'>AI Analysis</button></a>
+    <a class='ai-tab-link' href='/ai-insights-chat-bot' target='_self' aria-label='Insight Bot'><button class='ai-tab-button' type='button'>Insight Bot</button></a>"""
 
-_bot_tabs = """<a class='ai-tab' href='/ai-insights-chat'>AI Analysis</a>
-    <a class='ai-tab active' href='/ai-insights-chat-bot'>Insight Bot</a>"""
+_bot_tabs = """<a class='ai-tab-link' href='/ai-insights-chat' target='_self' aria-label='AI Analysis'><button class='ai-tab-button' type='button'>AI Analysis</button></a>
+    <a class='ai-tab-link active' href='/ai-insights-chat-bot' target='_self' aria-label='Insight Bot'><button class='ai-tab-button' type='button'>Insight Bot</button></a>"""
 
 ai_chat = (
     page_body

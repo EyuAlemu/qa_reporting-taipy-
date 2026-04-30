@@ -58,7 +58,12 @@ def nav_link(icon_name, label, page, active_page):
 
 
 def _sidebar_bot_srcdoc(metrics):
-    metrics_json = json.dumps(metrics)
+    metrics_json = (
+        json.dumps(metrics)
+        .replace("</", "<\\/")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
     doc = """
 <!doctype html>
 <html>
@@ -70,7 +75,7 @@ def _sidebar_bot_srcdoc(metrics):
     background: transparent;
     color: #172033;
     font-family: Arial, sans-serif;
-    overflow: hidden;
+    overflow: visible;
   }
   .bot-copy {
     margin: 0 0 12px 0;
@@ -81,17 +86,12 @@ def _sidebar_bot_srcdoc(metrics):
   .chat-display {
     display: none;
     gap: 8px;
-    max-height: 124px;
-    overflow: auto;
+    overflow: visible;
     margin: 12px 0 0 0;
     font-size: 13px;
   }
   .chat-display.has-message {
     display: grid;
-  }
-  .chat-display::-webkit-scrollbar {
-    width: 0;
-    height: 0;
   }
   .chat-msg {
     padding: 10px 11px;
@@ -184,6 +184,15 @@ def _sidebar_bot_srcdoc(metrics):
   function pickCycle(q) {
     const cycles = rows('test_execution_by_cycle').map(row => title(row.cycle_name)).filter(Boolean);
     return cycles.find(cycle => q.includes(cycle.toLowerCase()));
+  }
+
+  function hasTestCaseIntent(q) {
+    return (
+      q.includes('test case') || q.includes('test cases') ||
+      q.includes('tests case') || q.includes('tests cases') ||
+      q.includes('testcase') || q.includes('testcases') ||
+      q.includes('test ') || q.includes('tests ')
+    );
   }
 
   function topRows(items, valueKey, labelKey, limit) {
@@ -288,12 +297,15 @@ def _sidebar_bot_srcdoc(metrics):
         : 'There are no active alerts in the loaded sample data.';
     }
 
-    if (q.includes('test case') || q.includes('test cases') || q.includes('testcase') || q.includes('testcases')) {
+    if (hasTestCaseIntent(q)) {
       if (q.includes('executed') || q.includes('execution')) {
         return asNumber(metrics.executed_test_cases) + ' of ' + asNumber(metrics.total_test_cases) + ' test cases are executed, for an execution rate of ' + pct(metrics.execution_rate_pct) + '.';
       }
       if (q.includes('deferred')) {
         return 'There are ' + metrics.deferred_tests + ' deferred test cases.';
+      }
+      if (q.includes('how many') || q.includes('total') || q.includes('count')) {
+        return 'There are a total of ' + asNumber(metrics.total_test_cases) + ' test cases.';
       }
       return 'There are a total of ' + asNumber(metrics.total_test_cases) + ' test cases; ' + asNumber(metrics.executed_test_cases) + ' are executed and ' + asNumber(metrics.deferred_tests) + ' are deferred.';
     }
@@ -575,7 +587,7 @@ def sidebar_html(active_page):
 }}
 .sidebar-shell .sidebar-bot-frame {{
   width: 100%;
-  height: 350px;
+  height: 460px;
   border: none !important;
   display: block;
 }}
@@ -688,7 +700,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar {{ wi
 .bot-title-icon {{ font-size:0.9rem; }}
 .bot-card {{ border:1px solid #c7ccd6; border-radius:8px; padding:14px; background:#f8f9fb; }}
 .bot-copy {{ margin-bottom:8px; color:#172033; font-size:0.9rem; line-height:1.4; }}
-.sidebar-bot-frame {{ width:100%; height:232px; border:0; display:block; }}
+.sidebar-bot-frame {{ width:100%; height:460px; border:0; display:block; }}
 .sidebar-bot-form {{ margin:0; }}
 .sidebar-chat-display {{ display:grid; gap:6px; max-height:120px; overflow:auto; margin:6px 0 8px 0; color:#172033; font-size:0.84rem; }}
 .sidebar-chat-msg {{ padding:6px 8px; border-radius:6px; background:#ffffff; border:1px solid #e1e5ec; overflow-wrap:anywhere; }}

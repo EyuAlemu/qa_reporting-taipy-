@@ -242,19 +242,20 @@ def alert_cards(alerts):
     return "".join(cards)
 
 
-try:
-    data = load_all_tables()
-    kpis = calculate_kpis(data)
-except Exception:
-    data = {}
-    kpis = {}
+def render_executive_overview():
+    try:
+        data = load_all_tables()
+        kpis = calculate_kpis(data)
+    except Exception:
+        data = {}
+        kpis = {}
 
-defects_df = data.get("defects", pd.DataFrame()).copy()
-alerts_df = data.get("alerts", pd.DataFrame()).copy()
-if not alerts_df.empty and "is_active" in alerts_df.columns:
-    alerts_df = alerts_df[alerts_df["is_active"].astype(str).str.upper().eq("Y")]
+    defects_df = data.get("defects", pd.DataFrame()).copy()
+    alerts_df = data.get("alerts", pd.DataFrame()).copy()
+    if not alerts_df.empty and "is_active" in alerts_df.columns:
+        alerts_df = alerts_df[alerts_df["is_active"].astype(str).str.upper().eq("Y")]
 
-base_html = f"""
+    base_html = f"""
 <div class='page-header overview-header'>
   <div class='logo-shell'>
     <div class='logo-text'>AMPCUS</div>
@@ -316,4 +317,8 @@ base_html = f"""
 </div>
 """
 
-executive_overview = build_page_shell(base_html, "executive-overview")
+    return build_page_shell(base_html, "executive-overview")
+
+
+executive_overview_partial = None
+executive_overview = "<|part|partial={executive_overview_partial}|>"

@@ -50,6 +50,35 @@ def _fallback_answer(question, data=None):
     data = data or load_all_tables()
     kpis = calculate_kpis(data)
     q = str(question or "").lower()
+    has_test_case_intent = any(
+        phrase in q
+        for phrase in (
+            "test case",
+            "test cases",
+            "tests case",
+            "tests cases",
+            "testcase",
+            "testcases",
+            "test ",
+            "tests ",
+        )
+    )
+
+    if has_test_case_intent:
+        if "executed" in q or "execution" in q:
+            return (
+                f"{kpis.get('executed_test_cases', 0)} of {kpis.get('total_test_cases', 0)} "
+                f"test cases are executed, for an execution rate of {kpis.get('execution_rate_pct', 0):.1f}%."
+            )
+        if "deferred" in q:
+            return f"There are {kpis.get('deferred_tests', 0)} deferred test cases."
+        if "how many" in q or "total" in q or "count" in q:
+            return f"There are a total of {kpis.get('total_test_cases', 0)} test cases."
+        return (
+            f"There are a total of {kpis.get('total_test_cases', 0)} test cases; "
+            f"{kpis.get('executed_test_cases', 0)} are executed and "
+            f"{kpis.get('deferred_tests', 0)} are deferred."
+        )
 
     if "total" in q and ("defect" in q or "bug" in q):
         return f"The total number of defects is {kpis.get('total_defects', 0)}."
